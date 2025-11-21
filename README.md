@@ -268,14 +268,10 @@ Ou utiliser l'API avec bcryptjs pour hacher un mot de passe.
 4. Push (`git push origin feature/ma-feature`)
 5. Ouvrir une Pull Request
 
-## 📄 Licence
-
-MIT
-
 ## 👨‍💻 Auteur
 
 Projet réalisé dans le cadre de la formation YNOV.
 
 ---
 
-**Note** : Ce projet est une refonte d'un cas d'étude pédagogique. Le code original dans `cas_etude/` est volontairement mauvais pour illustrer les anti-patterns à éviter.
+**Note** : Ce projet est une refonte d'un cas d'étude pédagogique.
