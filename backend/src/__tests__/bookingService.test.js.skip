@@ -1,0 +1,228 @@
+import bookingService from '../services/bookingService.js';
+import repository from '../repositories/jsonRepository.js';
+import { serviceService } from '../services/index.js';
+
+// Mock dependencies
+jest.mock('../repositories/jsonRepository.js', () => ({
+  default: {
+    findMany: jest.fn(),
+    findById: jest.fn(),
+    findOne: jest.fn(),
+    create: jest.fn(),
+    delete: jest.fn(),
+    update: jest.fn(),
+  },
+}));
+
+jest.mock('../services/index.js', () => ({
+  serviceService: {
+    getServiceById: jest.fn(),
+  },
+}));
+
+describe('BookingService', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('getUserBookings', () => {
+    test('should return user bookings with service details', async () => {
+      const userId = 1;
+      const mockBookings = [
+        { id: 1, userId, serviceId: 1, slot: '2025-01-15 10:00', status: 'confirmed' },
+        { id: 2, userId, serviceId: 2, slot: '2025-01-16 14:00', status: 'confirmed' },
+      ];
+
+      const mockService1 = { id: 1, name: 'Salle A', type: 'room' };
+      const mockService2 = { id: 2, name: 'Projecteur', type: 'equipment' };
+
+      repository.findMany.mockResolvedValue(mockBookings);
+      serviceService.getServiceById
+        .mockResolvedValueOnce(mockService1)
+        .mockResolvedValueOnce(mockService2);
+
+      const result = await bookingService.getUserBookings(userId);
+
+      expect(result).toHaveLength(2);
+      expect(result[0].service.name).toBe('Salle A');
+      expect(result[1].service.name).toBe('Projecteur');
+    });
+  });
+
+  describe('createBooking', () => {
+    test('should create booking with valid data', async () => {
+      const userId = 1;
+      const bookingData = {
+        serviceId: 1,
+        slot: '2025-01-15 10:00',
+      };
+
+      const mockService = {
+        id: 1,
+        name: 'Salle A',
+        slots: ['2025-01-15 10:00', '2025-01-15 14:00'],
+      };
+
+      serviceService.getServiceById.mockResolvedValue(mockService);
+      repository.findOne.mockResolvedValue(null); // Slot not booked
+      repository.findMany.mockResolvedValue([]); // No user conflicts
+      repository.create.mockResolvedValue({
+        id: 1,
+        userId,
+        ...bookingData,
+        status: 'confirmed',
+      });
+
+      const result = await bookingService.createBooking(userId, bookingData);
+
+      expect(result).toHaveProperty('id');
+      expect(result.serviceId).toBe(bookingData.serviceId);
+      expect(result.slot).toBe(bookingData.slot);
+    });
+
+    test('should throw error if slot does not exist', async () => {
+      const bookingData = {
+        serviceId: 1,
+        slot: '2025-01-15 10:00',
+      };
+
+      const mockService = {
+        id: 1,
+        name: 'Salle A',
+        slots: ['2025-01-15 14:00'], // Different slot
+      };
+
+      serviceService.getServiceById.mockResolvedValue(mockService);
+
+      await expect(
+        bookingService.createBooking(1, bookingData)
+      ).rejects.toThrow("Ce créneau n'existe pas pour ce service");
+    });
+
+    test('should throw error if slot is already booked', async () => {
+      const bookingData = {
+        serviceId: 1,
+        slot: '2025-01-15 10:00',
+      };
+
+      const mockService = {
+        id: 1,
+        slots: ['2025-01-15 10:00'],
+      };
+
+      serviceService.getServiceById.mockResolvedValue(mockService);
+      repository.findOne.mockResolvedValue({ 
+        id: 2, 
+        userId: 2, 
+        serviceId: 1, 
+        slot: '2025-01-15 10:00' 
+      });
+
+      await expect(
+        bookingService.createBooking(1, bookingData)
+      ).rejects.toThrow('Ce créneau est déjà réservé');
+    });
+
+    test('should throw error if user has conflict', async () => {
+      const bookingData = {
+        serviceId: 1,
+        slot: '2025-01-15 10:00',
+      };
+
+      const mockService = {
+        id: 1,
+        slots: ['2025-01-15 10:00'],
+      };
+
+      serviceService.getServiceById.mockResolvedValue(mockService);
+      repository.findOne.mockResolvedValue(null); // Service slot available
+      
+      // Mock getUserBookings to return conflict
+      repository.findMany.mockResolvedValue([
+        { 
+          id: 1, 
+          userId: 1, 
+          serviceId: 2, 
+          slot: '2025-01-15 10:00',
+          status: 'confirmed' 
+        }
+      ]);
+
+      await expect(
+        bookingService.createBooking(1, bookingData)
+      ).rejects.toThrow('Vous avez déjà une réservation à ce créneau horaire');
+    });
+  });
+
+  describe('cancelBooking', () => {
+    test('should allow user to cancel own booking', async () => {
+      const bookingId = 1;
+      const userId = 1;
+
+      repository.findById.mockResolvedValue({
+        id: bookingId,
+        userId,
+        serviceId: 1,
+        slot: '2025-01-15 10:00',
+      });
+
+      repository.delete.mockResolvedValue(true);
+
+      const result = await bookingService.cancelBooking(bookingId, userId, false);
+
+      expect(result).toBe(true);
+      expect(repository.delete).toHaveBeenCalledWith('bookings', bookingId);
+    });
+
+    test('should throw error if user tries to cancel another user booking', async () => {
+      const bookingId = 1;
+      const userId = 2;
+
+      repository.findById.mockResolvedValue({
+        id: bookingId,
+        userId: 1, // Different user
+        serviceId: 1,
+        slot: '2025-01-15 10:00',
+      });
+
+      await expect(
+        bookingService.cancelBooking(bookingId, userId, false)
+      ).rejects.toThrow("Vous n'êtes pas autorisé à annuler cette réservation");
+    });
+
+    test('should allow admin to cancel any booking', async () => {
+      const bookingId = 1;
+      const adminId = 2;
+
+      repository.findById.mockResolvedValue({
+        id: bookingId,
+        userId: 1, // Different user
+        serviceId: 1,
+        slot: '2025-01-15 10:00',
+      });
+
+      repository.delete.mockResolvedValue(true);
+
+      const result = await bookingService.cancelBooking(bookingId, adminId, true);
+
+      expect(result).toBe(true);
+    });
+  });
+
+  describe('getBookingsByService', () => {
+    test('should return all bookings for a service', async () => {
+      const serviceId = 1;
+      const mockBookings = [
+        { id: 1, userId: 1, serviceId, slot: '2025-01-15 10:00' },
+        { id: 2, userId: 2, serviceId, slot: '2025-01-15 14:00' },
+      ];
+
+      repository.findMany.mockResolvedValue(mockBookings);
+
+      const result = await bookingService.getBookingsByService(serviceId);
+
+      expect(result).toHaveLength(2);
+      expect(result[0].serviceId).toBe(serviceId);
+    });
+  });
+});

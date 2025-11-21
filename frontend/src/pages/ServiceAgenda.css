@@ -1,0 +1,226 @@
+.agenda-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.agenda-header {
+  margin-bottom: 2rem;
+}
+
+.btn-back {
+  background: none;
+  border: none;
+  color: #3498db;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: color 0.3s;
+}
+
+.btn-back:hover {
+  color: #2980b9;
+}
+
+.service-info-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.service-info-header h1 {
+  margin: 0;
+  color: #2c3e50;
+}
+
+.service-description {
+  color: #7f8c8d;
+  margin-top: 0.5rem;
+}
+
+.legend {
+  display: flex;
+  gap: 2rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.legend-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.legend-dot.available {
+  background-color: #27ae60;
+}
+
+.legend-dot.mine {
+  background-color: #3498db;
+}
+
+.legend-dot.booked {
+  background-color: #95a5a6;
+}
+
+.agenda-calendar {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.day-group {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.date-header {
+  color: #2c3e50;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #ecf0f1;
+  text-transform: capitalize;
+}
+
+.slots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.slot-card {
+  padding: 1rem;
+  border-radius: 6px;
+  border: 2px solid;
+  transition: all 0.3s;
+  cursor: default;
+}
+
+.slot-card.available {
+  border-color: #27ae60;
+  background-color: #d5f4e6;
+  cursor: pointer;
+}
+
+.slot-card.available:hover {
+  background-color: #b8f0d8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(39, 174, 96, 0.2);
+}
+
+.slot-card.mine {
+  border-color: #3498db;
+  background-color: #d6eaf8;
+}
+
+.slot-card.booked {
+  border-color: #95a5a6;
+  background-color: #ecf0f1;
+  opacity: 0.7;
+}
+
+.slot-time {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.slot-status {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.status-text {
+  font-size: 0.875rem;
+  color: #7f8c8d;
+  font-weight: 500;
+}
+
+.btn-book-inline,
+.btn-cancel-inline {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-book-inline {
+  background-color: #27ae60;
+  color: white;
+}
+
+.btn-book-inline:hover {
+  background-color: #229954;
+}
+
+.btn-cancel-inline {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.btn-cancel-inline:hover {
+  background-color: #c0392b;
+}
+
+.no-slots {
+  text-align: center;
+  padding: 3rem;
+  color: #7f8c8d;
+  font-size: 1.125rem;
+  background: white;
+  border-radius: 8px;
+}
+
+.loading-container,
+.error-container {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.error-container p {
+  color: #e74c3c;
+  margin-bottom: 1rem;
+  font-size: 1.125rem;
+}
+
+@media (max-width: 768px) {
+  .agenda-container {
+    padding: 1rem;
+  }
+
+  .legend {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .slots-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .service-info-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

@@ -1,0 +1,66 @@
+.services-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.services-header {
+  margin-bottom: 2rem;
+}
+
+.services-header h1 {
+  color: #2c3e50;
+  margin-bottom: 1rem;
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.filter-buttons button {
+  padding: 0.5rem 1rem;
+  border: 2px solid #3498db;
+  background-color: white;
+  color: #3498db;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-weight: 500;
+}
+
+.filter-buttons button:hover {
+  background-color: #ecf0f1;
+}
+
+.filter-buttons button.active {
+  background-color: #3498db;
+  color: white;
+}
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.loading-container {
+  text-align: center;
+  padding: 4rem;
+  font-size: 1.25rem;
+  color: #7f8c8d;
+}
+
+.no-services {
+  text-align: center;
+  padding: 2rem;
+  color: #7f8c8d;
+  font-size: 1.125rem;
+}
+
+@media (max-width: 768px) {
+  .services-grid {
+    grid-template-columns: 1fr;
+  }
+}

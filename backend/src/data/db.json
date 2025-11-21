@@ -1,0 +1,72 @@
+{
+  "services": [
+    {
+      "id": 1,
+      "name": "Salle A",
+      "type": "room",
+      "description": "Salle de réunion pour 10 personnes",
+      "slots": [
+        "2025-11-20 09:00",
+        "2025-11-20 10:00",
+        "2025-11-20 14:00",
+        "2025-11-21 09:00",
+        "2025-11-21 10:00"
+      ],
+      "createdAt": "2025-11-19T10:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "name": "Studio Photo",
+      "type": "equipment",
+      "description": "Studio photo professionnel avec éclairage",
+      "slots": [
+        "2025-11-20 14:00",
+        "2025-11-20 16:00",
+        "2025-11-21 14:00"
+      ],
+      "createdAt": "2025-11-19T10:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "name": "Projecteur HD",
+      "type": "equipment",
+      "description": "Projecteur haute définition",
+      "slots": [
+        "2025-11-20 09:00",
+        "2025-11-20 13:00",
+        "2025-11-21 09:00"
+      ],
+      "createdAt": "2025-11-19T10:00:00.000Z"
+    }
+  ],
+  "users": [
+    {
+      "id": 1,
+      "email": "admin@example.com",
+      "password": "$2b$10$Lt3GHYbkwmrmQgyo/AHEneaYKtLLHqh1NvSq13zKKAIoAtQemWxt2",
+      "firstName": "Admin",
+      "lastName": "System",
+      "role": "admin",
+      "createdAt": "2025-11-19T10:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "email": "user@example.com",
+      "password": "$2b$10$A.4ijz5ePZbwVXSEgm6UY.rxR30KWt2BcyPdMrKpEMwGHOwA7OX9.",
+      "firstName": "John",
+      "lastName": "Doe",
+      "role": "user",
+      "createdAt": "2025-11-19T10:00:00.000Z"
+    }
+  ],
+  "bookings": [
+    {
+      "userId": 2,
+      "serviceId": 2,
+      "slot": "2025-11-20 16:00",
+      "status": "confirmed",
+      "id": 1,
+      "createdAt": "2025-11-19T19:36:15.359Z"
+    }
+  ]
+}

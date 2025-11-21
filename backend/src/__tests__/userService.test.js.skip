@@ -1,0 +1,197 @@
+import userService from '../services/userService.js';
+import repository from '../repositories/jsonRepository.js';
+import bcrypt from 'bcryptjs';
+
+// Mock repository
+jest.mock('../repositories/jsonRepository.js', () => ({
+  default: {
+    create: jest.fn(),
+    findOne: jest.fn(),
+    findById: jest.fn(),
+    findMany: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+    read: jest.fn(),
+  },
+}));
+
+describe('UserService', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('register', () => {
+    test('should register a new user with hashed password', async () => {
+      const userData = {
+        email: 'test@example.com',
+        password: 'password123',
+        firstName: 'Test',
+        lastName: 'User',
+      };
+
+      repository.findOne.mockResolvedValue(null); // Email doesn't exist
+      repository.create.mockResolvedValue({
+        id: 1,
+        email: userData.email,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        role: 'user',
+        createdAt: new Date().toISOString(),
+      });
+
+      const result = await userService.register(userData);
+
+      expect(repository.findOne).toHaveBeenCalledWith('users', expect.any(Function));
+      expect(repository.create).toHaveBeenCalledWith('users', expect.objectContaining({
+        email: userData.email,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        role: 'user',
+      }));
+      expect(result).not.toHaveProperty('password');
+      expect(result.email).toBe(userData.email);
+    });
+
+    test('should throw error if email already exists', async () => {
+      const userData = {
+        email: 'existing@example.com',
+        password: 'password123',
+        firstName: 'Test',
+        lastName: 'User',
+      };
+
+      repository.findOne.mockResolvedValue({ id: 1, email: userData.email });
+
+      await expect(userService.register(userData)).rejects.toThrow('Cet email est déjà utilisé');
+    });
+  });
+
+  describe('login', () => {
+    test('should return user and token for valid credentials', async () => {
+      const email = 'test@example.com';
+      const password = 'password123';
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      repository.findOne.mockResolvedValue({
+        id: 1,
+        email,
+        password: hashedPassword,
+        firstName: 'Test',
+        lastName: 'User',
+        role: 'user',
+      });
+
+      const result = await userService.login(email, password);
+
+      expect(result).toHaveProperty('user');
+      expect(result).toHaveProperty('token');
+      expect(result.user.email).toBe(email);
+      expect(result.user).not.toHaveProperty('password');
+    });
+
+    test('should throw error for invalid email', async () => {
+      repository.findOne.mockResolvedValue(null);
+
+      await expect(
+        userService.login('invalid@example.com', 'password123')
+      ).rejects.toThrow('Email ou mot de passe incorrect');
+    });
+
+    test('should throw error for invalid password', async () => {
+      const hashedPassword = await bcrypt.hash('correctpassword', 10);
+
+      repository.findOne.mockResolvedValue({
+        id: 1,
+        email: 'test@example.com',
+        password: hashedPassword,
+      });
+
+      await expect(
+        userService.login('test@example.com', 'wrongpassword')
+      ).rejects.toThrow('Email ou mot de passe incorrect');
+    });
+  });
+
+  describe('getUserById', () => {
+    test('should return user without password', async () => {
+      repository.findById.mockResolvedValue({
+        id: 1,
+        email: 'test@example.com',
+        password: 'hashedpassword',
+        firstName: 'Test',
+        lastName: 'User',
+        role: 'user',
+      });
+
+      const result = await userService.getUserById(1);
+
+      expect(result).not.toHaveProperty('password');
+      expect(result.email).toBe('test@example.com');
+    });
+
+    test('should throw error if user not found', async () => {
+      repository.findById.mockResolvedValue(null);
+
+      await expect(userService.getUserById(999)).rejects.toThrow('Utilisateur non trouvé');
+    });
+  });
+
+  describe('getAllUsers', () => {
+    test('should return all users without passwords', async () => {
+      repository.read.mockResolvedValue([
+        { id: 1, email: 'user1@test.com', password: 'hash1', role: 'user' },
+        { id: 2, email: 'user2@test.com', password: 'hash2', role: 'admin' },
+      ]);
+
+      const result = await userService.getAllUsers();
+
+      expect(result).toHaveLength(2);
+      expect(result[0]).not.toHaveProperty('password');
+      expect(result[1]).not.toHaveProperty('password');
+    });
+  });
+
+  describe('updateUserRole', () => {
+    test('should update user role', async () => {
+      repository.findById.mockResolvedValue({
+        id: 1,
+        email: 'test@example.com',
+        role: 'user',
+      });
+
+      repository.update.mockResolvedValue({
+        id: 1,
+        email: 'test@example.com',
+        role: 'admin',
+      });
+
+      const result = await userService.updateUserRole(1, 'admin');
+
+      expect(repository.update).toHaveBeenCalledWith('users', 1, { role: 'admin' });
+      expect(result.role).toBe('admin');
+    });
+
+    test('should throw error for invalid role', async () => {
+      await expect(
+        userService.updateUserRole(1, 'superadmin')
+      ).rejects.toThrow('Rôle invalide');
+    });
+  });
+
+  describe('deleteUser', () => {
+    test('should delete user', async () => {
+      repository.delete.mockResolvedValue(true);
+
+      const result = await userService.deleteUser(1);
+
+      expect(repository.delete).toHaveBeenCalledWith('users', 1);
+      expect(result).toBe(true);
+    });
+
+    test('should throw error if user not found', async () => {
+      repository.delete.mockResolvedValue(false);
+
+      await expect(userService.deleteUser(999)).rejects.toThrow('Utilisateur non trouvé');
+    });
+  });
+});
