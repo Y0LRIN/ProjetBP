@@ -52,7 +52,7 @@ ProjetBP/
 
 ```bash
 # Cloner le projet
-git clone <votre-repo>
+git clone https://github.com/Y0LRIN/ProjetBP.git
 cd ProjetBP
 
 # Installer les dépendances backend
