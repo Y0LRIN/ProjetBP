@@ -1,5 +1,4 @@
 import repository from '../repositories/jsonRepository.js';
-import { serviceService } from './index.js';
 
 /**
  * BookingService - Handles booking management
